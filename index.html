@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="《信号与系统》交互式 3D 教学仿真实验平台 — 对标深圳技术大学 SG00078 教学大纲，涵盖第1-9章全部核心知识点与5项课内必做 MATLAB 实验（共55个三维交互仿真案例）。" />
+  <title>《信号与系统》交互式 3D 教学仿真实验平台 | SG00078 全大纲覆盖</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1221'/%3E%3Cpath d='M8 34 C16 10, 24 10, 32 34 C40 58, 48 58, 56 34' fill='none' stroke='%2338bdf8' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='34' r='5' fill='%23fbbf24'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <!-- ==================== 顶部章节下拉菜单与全局工具栏 ==================== -->
+  <header class="top-nav">
+    <div class="brand-group">
+      <div class="brand-logo" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+          <path d="M3 17C7 5 11 5 16 17C21 29 25 29 29 17" stroke="#38bdf8" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M3 17C7 24 11 24 16 17C21 10 25 10 29 17" stroke="#818cf8" stroke-width="1.8" stroke-dasharray="2.5 2.5" stroke-linecap="round"/>
+          <circle cx="16" cy="17" r="3" fill="#fbbf24"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>《信号与系统》3D 交互仿真实验平台</h1>
+        <span class="brand-sub">深圳技术大学 SG00078 教学大纲 · 9 章 + 5 项实验 · 55 个 3D 案例</span>
+      </div>
+    </div>
+
+    <!-- 章节下拉选择器（级联菜单 + 章节下拉框 + 案例下拉框 + 前后切换） -->
+    <nav class="nav-selectors" aria-label="章节与实验案例选择">
+      <div class="cascade-menu-wrap" id="cascadeWrap">
+        <button type="button" class="btn-cascade" id="btnCascade" title="打开全章节级联下拉目录">
+          <span>📑 章节级联选单</span>
+          <span aria-hidden="true">▾</span>
+        </button>
+        <div class="cascade-dropdown" role="menu" aria-label="按章节级联选择仿真案例">
+          <div class="cascade-chapters" id="cascadeChapters"></div>
+          <div class="cascade-cases" id="cascadeCases"></div>
+        </div>
+      </div>
+
+      <div class="select-field">
+        <span class="select-tag">章节</span>
+        <select id="chapterSelect" class="nav-select" aria-label="选择课程章节"></select>
+      </div>
+
+      <div class="select-field">
+        <span class="select-tag">案例</span>
+        <select id="caseSelect" class="nav-select" aria-label="选择本章节仿真案例"></select>
+      </div>
+
+      <div class="step-nav-btns">
+        <button type="button" class="icon-btn" id="btnPrevCase" aria-label="上一个实验案例">◀</button>
+        <button type="button" class="icon-btn" id="btnNextCase" aria-label="下一个实验案例">▶</button>
+      </div>
+    </nav>
+
+    <div class="header-actions">
+      <button type="button" class="icon-btn btn-syllabus" id="btnOpenSyllabus" title="查看教学大纲 55 项覆盖对照表">
+        📋 大纲总览 (55)
+      </button>
+      <button type="button" class="icon-btn" id="btnThemeToggle" title="切换深色科研模式 / 教室投影仪浅色模式">
+        ☀️ 教室投影浅色
+      </button>
+      <button type="button" class="icon-btn" id="btnFullscreen" title="切换全屏课堂演示">
+        ⛶
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== 主实验工作区 ==================== -->
+  <main class="workspace">
+    <!-- 左侧：3D 科学可视化主舞台 + 同步双通道 2D 示波器 -->
+    <section class="stage-panel" aria-label="三维仿真视图与同步二维示波器">
+      <div class="canvas3d-wrap">
+        <!-- 悬浮 3D 视角预设与辅助图层栏 -->
+        <div class="floating-bar camera-bar" role="toolbar" aria-label="三维相机视角控制">
+          <button type="button" class="tool-chip cam-preset-btn active" data-cam="3d" title="标准三维透视立体视角">🧊 3D 立体</button>
+          <button type="button" class="tool-chip cam-preset-btn" data-cam="xz" title="正交投影至 X-Z 平面（常对应标准时域波形）">📈 正视 XZ</button>
+          <button type="button" class="tool-chip cam-preset-btn" data-cam="yz" title="正交投影至 Y-Z 平面（常对应频谱/截面视图）">📊 侧视 YZ</button>
+          <button type="button" class="tool-chip cam-preset-btn" data-cam="xy" title="正交俯视 X-Y 平面（常对应复平面零极点与收敛域图）">🎯 俯视 XY</button>
+          <button type="button" class="tool-chip cam-preset-btn" data-cam="reset" title="复位至当前案例最佳三维观测角">⟲ 复位</button>
+          <span class="bar-divider"></span>
+          <button type="button" class="tool-chip" id="btnAutoRotate" title="开启/关闭水平自动环绕旋转">🔄 环绕</button>
+          <button type="button" class="tool-chip active" id="btnProjToggle" title="显示/隐藏坐标盒背景墙正交投影阴影">墙面投影</button>
+          <button type="button" class="tool-chip active" id="btnGridToggle" title="显示/隐藏三维坐标网格与刻度">坐标网格</button>
+        </div>
+
+        <!-- 主 3D 画布 -->
+        <canvas id="canvas3d"></canvas>
+
+        <!-- 底部悬浮动态播放控制与交互手势提示 -->
+        <div class="floating-bar playback-bar">
+          <div class="playback-left">
+            <button type="button" class="tool-chip active" id="btnPlayPause">⏸ 暂停动态</button>
+            <select id="speedSelect" class="speed-select" aria-label="动画播放倍速">
+              <option value="0.5">0.5× 慢放</option>
+              <option value="1.0" selected>1.0× 常速</option>
+              <option value="2.0">2.0× 快放</option>
+            </select>
+            <button type="button" class="tool-chip" id="btnResetAnim" title="重置动态演化时刻 t = 0">⏮ 归零</button>
+          </div>
+          <div class="playback-right">
+            <span class="gesture-hint">🖱️ 左键旋转 · 右键/Shift平移 · 滚轮缩放 · 悬停曲线读数</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部可折叠同步二维示波器与频谱仪 -->
+      <div class="scope-strip" id="scopeStrip">
+        <div class="scope-bar" id="scopeBar" title="点击收起或展开二维辅助示波器">
+          <span>📉 <strong>同步二维精密示波器 / 频谱截面仪</strong>（与上方 3D 参数实时联动）</span>
+          <span id="scopeToggleLabel">收起面板 ▼</span>
+        </div>
+        <div class="scope-grid">
+          <div class="scope-cell">
+            <canvas id="canvas2dLeft"></canvas>
+          </div>
+          <div class="scope-cell">
+            <canvas id="canvas2dRight"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右侧：实验参数控制、实时指标监测与教学内容面板 -->
+    <aside class="control-panel" aria-label="实验参数控制与教学原理">
+      <!-- 当前案例标题与大纲等级卡片 -->
+      <div class="panel-card">
+        <div class="case-meta-row">
+          <div class="badge-group">
+            <span class="code-badge" id="caseCodeBadge">Ch1-(1)</span>
+            <span class="level-badge level-master" id="caseLevelBadge">掌握</span>
+          </div>
+          <span class="weeks-tag" id="caseWeeksTag">第 1–2 周 · 4 学时</span>
+        </div>
+        <h2 class="case-title" id="caseTitle">加载中...</h2>
+        <p class="case-summary" id="caseSummary"></p>
+      </div>
+
+      <!-- 典型教学现象一键预设 -->
+      <div class="panel-card" id="presetsCard">
+        <div class="section-head">
+          <span class="section-title">⚡ 典型教学场景预设</span>
+        </div>
+        <div class="presets-list" id="presetsList"></div>
+      </div>
+
+      <!-- 实时交互参数滑块与选择器 -->
+      <div class="panel-card">
+        <div class="section-head">
+          <span class="section-title">🎛️ 实验参数实时调节</span>
+          <button type="button" class="link-btn" id="btnResetParams">↺ 恢复默认</button>
+        </div>
+        <div class="controls-stack" id="controlsStack"></div>
+      </div>
+
+      <!-- 实时物理特征量监测 -->
+      <div class="panel-card">
+        <div class="section-head">
+          <span class="section-title">📡 实时物理特征与稳定性监测</span>
+        </div>
+        <div class="metrics-grid" id="metricsGrid"></div>
+      </div>
+
+      <!-- 三合一教学深度解析标签页：原理与大纲 / MATLAB同步脚本 / 随堂自测 -->
+      <div class="panel-card tabs-card">
+        <div class="tab-header" role="tablist">
+          <button type="button" class="tab-btn active" data-tab="theory" role="tab">📖 原理与大纲</button>
+          <button type="button" class="tab-btn" data-tab="matlab" role="tab">💻 MATLAB 代码</button>
+          <button type="button" class="tab-btn" data-tab="quiz" role="tab">✅ 随堂自测</button>
+        </div>
+        <div class="tab-body">
+          <!-- Tab 1: 数学公式、三维导览与大纲要求 -->
+          <div class="tab-pane active" id="tab-theory" role="tabpanel">
+            <div class="formula-box" id="theoryFormula"></div>
+            <div class="guide-callout" id="theoryGuide"></div>
+            <ul class="objectives-list" id="theoryObjectives"></ul>
+          </div>
+
+          <!-- Tab 2: 实时参数同步 MATLAB R2024b 实验代码 -->
+          <div class="tab-pane" id="tab-matlab" role="tabpanel">
+            <div class="code-toolbar">
+              <span>已随当前滑块参数实时同步生成（兼容 MATLAB R2020a–R2024b+）</span>
+              <button type="button" class="icon-btn" id="btnCopyMatlab" style="height:28px;font-size:12px;">📋 复制代码</button>
+            </div>
+            <pre class="matlab-pre" id="matlabCode"></pre>
+          </div>
+
+          <!-- Tab 3: 随堂思考与互动自测 -->
+          <div class="tab-pane" id="tab-quiz" role="tabpanel">
+            <p class="quiz-question" id="quizQuestion"></p>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="quiz-feedback" id="quizFeedback"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ==================== 课程教学大纲全覆盖对照弹窗 ==================== -->
+  <div class="modal-backdrop" id="syllabusModal" role="dialog" aria-modal="true" aria-labelledby="syllabusModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h2 id="syllabusModalTitle">📋 《信号与系统》(SG00078) 教学大纲 3D 仿真全覆盖矩阵</h2>
+          <span style="font-size:12px;color:var(--text-secondary);">奥本海姆《信号与系统》(第2版) · 36 理论学时 + 18 课内实践学时 · 共 55 个可交互三维实验</span>
+        </div>
+        <div class="modal-search-row">
+          <input type="search" id="syllabusSearch" class="modal-search" placeholder="搜索知识点：卷积 / 吉布斯 / 采样 / 极点..." aria-label="搜索仿真实验案例" />
+          <button type="button" class="icon-btn" id="btnCloseSyllabus">✕ 关闭</button>
+        </div>
+      </div>
+      <div class="modal-content" id="syllabusModalBody"></div>
+    </div>
+  </div>
+
+  <!-- 轻提示气泡 -->
+  <div class="toast" id="toastMsg" role="status" aria-live="polite"></div>
+
+  <!-- ==================== 核心数学引擎、3D/2D 渲染器与 10 大章节模块 ==================== -->
+  <script defer src="./js/dsp-math.js"></script>
+  <script defer src="./js/engine3d.js"></script>
+  <script defer src="./js/plot2d.js"></script>
+  <script defer src="./js/chapters/ch1-intro.js"></script>
+  <script defer src="./js/chapters/ch2-lti.js"></script>
+  <script defer src="./js/chapters/ch3-ctfs.js"></script>
+  <script defer src="./js/chapters/ch4-ctft.js"></script>
+  <script defer src="./js/chapters/ch5-dtft.js"></script>
+  <script defer src="./js/chapters/ch6-timefreq.js"></script>
+  <script defer src="./js/chapters/ch7-sampling.js"></script>
+  <script defer src="./js/chapters/ch8-laplace.js"></script>
+  <script defer src="./js/chapters/ch9-ztrans.js"></script>
+  <script defer src="./js/chapters/labs-practice.js"></script>
+  <script defer src="./js/app.js"></script>
+</body>
+</html>
